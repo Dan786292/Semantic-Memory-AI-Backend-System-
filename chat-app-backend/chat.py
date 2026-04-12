@@ -1,15 +1,17 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
 from database import get_db
 from models import ChatMessage
 from schemas import ChatMessageCreate, ChatMessageRead
 from auth import get_current_user
 from utils import call_llm
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
 
-MAX_CONTEXT_MESSAGES = 10  # Limit context for scalability
+MAX_CONTEXT_MESSAGES = 10
 
 
 @router.post("/message", response_model=ChatMessageRead)
@@ -18,7 +20,8 @@ def send_message(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    # STEP 4: persist user message first
+    logger.info(f"User {current_user.email} sent a message")
+
     chat = ChatMessage(
         user_id=current_user.id,
         message=chat_in.message,
@@ -27,7 +30,8 @@ def send_message(
     db.commit()
     db.refresh(chat)
 
-    # STEP B: load recent context
+    logger.debug(f"Message stored with id={chat.id}")
+
     history = (
         db.query(ChatMessage)
         .filter(ChatMessage.user_id == current_user.id)
@@ -36,7 +40,8 @@ def send_message(
         .all()
     )
 
-    # STEP C: build prompt
+    logger.debug(f"Loaded {len(history)} messages for context")
+
     context = "\n".join(
         f"User: {m.message}\nAssistant: {m.response or ''}"
         for m in reversed(history)
@@ -44,14 +49,15 @@ def send_message(
 
     prompt = f"{context}\nUser: {chat_in.message}"
 
-    # STEP 5: call LLM
+    logger.debug("Calling LLM API")
+
     chat.response = call_llm(prompt)
 
-    # STEP 6: persist response
     db.commit()
     db.refresh(chat)
 
-    # STEP 7: return result
+    logger.info(f"Response generated for message id={chat.id}")
+
     return chat
 
 
@@ -60,9 +66,15 @@ def chat_history(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    return (
+    logger.info(f"Fetching chat history for {current_user.email}")
+
+    history = (
         db.query(ChatMessage)
         .filter(ChatMessage.user_id == current_user.id)
         .order_by(ChatMessage.created_at.asc())
         .all()
     )
+
+    logger.debug(f"Returned {len(history)} messages")
+
+    return history
