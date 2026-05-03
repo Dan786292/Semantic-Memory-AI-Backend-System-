@@ -6,8 +6,11 @@ from schemas import UserCreate, UserLogin, Token, UserCreateWithCode
 from utils import generate_code, hash_code, verify_code
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta
 import os
 import logging
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +54,16 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         logger.warning(f"Login failed - invalid code for: {user.email}")
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = jwt.encode({"sub": db_user.email}, SECRET_KEY, algorithm="HS256")
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    token = jwt.encode(
+        {
+            "sub": db_user.email,
+            "exp": expire
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
 
     logger.info(f"Login successful: {user.email}")
 
