@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -16,5 +16,6 @@ class ChatMessage(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     message = Column(String)
     response = Column(String, nullable=True)
+    embedding = Column(Text, nullable=True) ###
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="messages")

@@ -35,9 +35,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
 
-    logger.info(f"User created successfully: {user.email}")
+    logger.info(f"Sending verification code to {user.email}: {code}")
 
-    return {"email": db_user.email, "code": code}
+    return {
+        "email": db_user.email,
+        "code": code
+    }
 
 
 @router.post("/login", response_model=Token)

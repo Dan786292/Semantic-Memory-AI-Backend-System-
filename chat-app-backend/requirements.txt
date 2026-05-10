@@ -6,3 +6,7 @@ passlib[bcrypt]
 python-jose
 requests
 python-dotenv
+email-validator
+bcrypt==4.0.1
+sentence-transformers
+numpy
