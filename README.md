@@ -1,102 +1,101 @@
-Chat App (SaaS MVP)
+AI Conversational Backend
 
-Full-stack SaaS chat application with authentication and AI-powered responses.
+Backend service for an AI-powered conversational assistant with semantic memory retrieval, contextual prompt generation, and JWT-based authentication.
 
-Overview
-
-This project implements a minimal SaaS-style chat system where users can:
-
-Register and log in using email + verification code
-Send messages to an AI service
-View persistent chat history
-
-The backend handles authentication, message storage, and AI interaction.
-The frontend provides a simple interface for user interaction.
-
+Features
+FastAPI-based REST API
+JWT authentication and protected routes
+Semantic memory retrieval using embeddings
+Context-aware prompt construction
+External LLM integration
+Structured logging and retry handling
+Modular backend architecture
+Persistent chat history storage
 Tech Stack
+Python
+FastAPI
+SQLAlchemy
+SQLite
+Sentence Transformers
+JWT Authentication
+Pydantic
+Passlib / bcrypt
+Architecture Overview
 
-Backend
+The system is divided into modular backend components:
 
-Python (FastAPI)
-SQLAlchemy (ORM)
-SQLite (database)
-JWT authentication
+Client
+   |
+FastAPI Routes
+   |
+Business Logic
+   |
+Database + Embedding Pipeline
+   |
+External LLM Service
 
-Frontend
+Main modules:
 
-React (TypeScript)
-Axios (API client)
-Vite (build tool)
-Architecture
-Stateless JWT-based authentication
-Relational data model (users ↔ messages)
-Backend integrates with external LLM API
-Chat context limited to recent messages for scalability
-Project Structure
-backend/
-├─ main.py
-├─ database.py
-├─ models.py
-├─ schemas.py
-├─ auth.py
-├─ chat.py
-├─ utils.py
-├─ requirements.txt
+auth.py — authentication and JWT handling
+chat.py — chat flow and semantic retrieval
+models.py — SQLAlchemy ORM models
+schemas.py — API validation schemas
+utils.py — embeddings, similarity search, LLM calls, sanitization
+database.py — database session management
+Semantic Memory Retrieval
 
-frontend/
-├─ src/
-│  ├─ api/
-│  ├─ components/
-│  ├─ App.tsx
-│  └─ main.tsx
-├─ package.json
-Setup & Run
-1. Clone repository
+The application stores vector embeddings for user messages and retrieves relevant historical context using cosine similarity scoring.
+
+Retrieval Flow
+User message is sanitized
+Embedding vector is generated
+Relevant historical messages are ranked by semantic similarity
+Short-term and semantic memories are merged
+Context-aware prompt is sent to the LLM
+Authentication
+
+Authentication is implemented using:
+
+JWT access tokens
+OAuth2 password flow
+bcrypt hashing for verification codes
+Protected API endpoints
+API Endpoints
+Auth
+Method	Endpoint	Description
+POST	/auth/register	Register user
+POST	/auth/login	Login and receive JWT
+Chat
+Method	Endpoint	Description
+POST	/chat/message	Send chat message
+GET	/chat/history	Retrieve chat history
+Running Locally
+Clone repository
 git clone <repo-url>
-cd chat-app
-2. Backend setup
-cd backend
-python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+cd <repo-name>
+Install dependencies
 pip install -r requirements.txt
+Configure environment
 
 Create .env file:
 
-JWT_SECRET=your_secret_key
-
-Run server:
-
+JWT_SECRET=your_secret
+APIFREE_LLM_URL=your_llm_endpoint
+Run server
 uvicorn main:app --reload
-
-Backend runs on:
-
-http://127.0.0.1:8000
-3. Frontend setup
-cd frontend
-npm install
-npm run dev
-
-Frontend runs on:
-
-http://127.0.0.1:5173
-API Overview
-Auth
-POST /auth/register → register user (returns code for demo)
-POST /auth/login → returns JWT token
-Chat
-POST /chat/message → send message (auth required)
-GET /chat/history → retrieve chat history
-Key Implementation Details
-Passwordless login using one-time code (hashed with bcrypt)
-JWT used for stateless authentication
-Chat messages persisted before and after AI response
-Context window limited (MAX_CONTEXT_MESSAGES) to control cost and latency
-External LLM API call includes retry logic for resilience
-Notes
-.env, database files, and dependencies are excluded from version control
-Registration returns the login code directly (demo purpose only)
+Example Technologies Demonstrated
+REST API design
+Authentication and authorization
+AI application backend development
+Embedding-based retrieval systems
+Context engineering
+Error handling and resiliency
+Backend modularization
 Future Improvements
-Replace demo auth with email delivery
-Add streaming responses for better UX
-Improve error handling and validation
-Add tests and API documentation
+PostgreSQL integration
+Docker deployment
+Async request handling
+Redis caching
+Vector database integration
+Streaming LLM responses
+Automated testing
