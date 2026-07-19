@@ -7,7 +7,7 @@ const api = axios.create({
 });
 
 export const registerUser = async (email: string) => {
-  console.log("➡️ Frontend sending register:", email);
+  console.log(" Frontend sending register:", email);
   const res = await api.post("/auth/register", { email });
   return res.data;
 };
